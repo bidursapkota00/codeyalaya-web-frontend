@@ -1,52 +1,79 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { FaGithub, FaFacebook } from "react-icons/fa";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/firebase";
 import Link from "next/link";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState<string>("");
-  const [username, setUsername] = useState<string>("");
+  const [fullName, setFullName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [error, setError] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const router = useRouter();
 
   const validateEmail = (email: string): boolean => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
   const validatePassword = (password: string): boolean => {
-    return password.length >= 6;
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
+      password
+    );
   };
 
-  const handleSubmit = (e: FormEvent): void => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!fullName) {
+      setError("Full name is required");
+      return;
+    }
     if (!email || !validateEmail(email)) {
       setError("Valid email is required");
       return;
     }
-    if (!username) {
-      setError("Username is required");
+    if (!password || !validatePassword(password)) {
+      setError(
+        "Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a symbol"
+      );
       return;
     }
-    if (!password || !validatePassword(password)) {
-      setError("Password must be at least 6 characters long");
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
       return;
     }
     setError("");
-    createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        const user = userCredential.user;
-        console.log(user);
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log(errorCode);
-        console.log(errorMessage);
+    setLoading(true);
+    try {
+      const response = await fetch("http://localhost:8000/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          full_name: fullName,
+          email,
+          password,
+        }),
       });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Registration failed");
+
+      router.push("/login");
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+        console.log(error.message);
+      } else {
+        setError("An unknown error occurred");
+        console.log("Unknown error: ", error);
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -58,6 +85,17 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="mt-6">
           <div>
             <label className="block text-purple-800 dark:text-gray-300">
+              Full Name
+            </label>
+            <input
+              type="text"
+              className="w-full mt-2 p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+            />
+          </div>
+          <div className="mt-4">
+            <label className="block text-purple-800 dark:text-gray-300">
               Email
             </label>
             <input
@@ -65,17 +103,6 @@ export default function RegisterPage() {
               className="w-full mt-2 p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div className="mt-4">
-            <label className="block text-purple-800 dark:text-gray-300">
-              Username
-            </label>
-            <input
-              type="text"
-              className="w-full mt-2 p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
             />
           </div>
           <div className="mt-4">
@@ -89,12 +116,27 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
+          <div className="mt-4">
+            <label className="block text-purple-800 dark:text-gray-300">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              className="w-full mt-2 p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </div>
           {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
           <button
             type="submit"
-            className="w-full mt-4 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition"
+            className="w-full mt-4 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition disabled:opacity-50 flex justify-center items-center gap-2"
+            disabled={loading}
           >
-            Register
+            {loading ? (
+              <AiOutlineLoading3Quarters className="animate-spin" size={20} />
+            ) : null}
+            {loading ? "Registering..." : "Register"}
           </button>
         </form>
         <div className="flex items-center my-6">
