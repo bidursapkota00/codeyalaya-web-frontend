@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Social from "@/app/(auth)/social";
 import Input from "@/app/(auth)/input";
+import Button from "@/app/(auth)/button";
+import CustomError from "@/app/(auth)/error";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState<string>("");
@@ -48,15 +50,18 @@ export default function RegisterPage() {
     setError("");
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:8000/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          full_name: fullName,
-          email,
-          password,
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            full_name: fullName,
+            email,
+            password,
+          }),
+        }
+      );
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail || "Registration failed");
@@ -94,17 +99,8 @@ export default function RegisterPage() {
         >
           Confirm Password
         </Input>
-        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-        <button
-          type="submit"
-          className="w-full mt-4 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition disabled:opacity-50 flex justify-center items-center gap-2"
-          disabled={loading}
-        >
-          {loading ? (
-            <AiOutlineLoading3Quarters className="animate-spin" size={20} />
-          ) : null}
-          {loading ? "Registering..." : "Register"}
-        </button>
+        <CustomError error={error} />
+        <Button loading={loading} text="Register" loadingText="Registering" />
       </form>
       <Social setError={setError} setLoading={setLoading} />
     </>
