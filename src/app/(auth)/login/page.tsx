@@ -1,7 +1,7 @@
 import { Metadata } from "next";
-import Already from "@/app/(auth)/already";
+import { Card } from "@/components/ui/card";
 import Form from "@/app/(auth)/login/form";
-import AuthLayout from "@/app/(auth)/authlayout";
+import { Already } from "@/app/(auth)/already";
 
 export const metadata: Metadata = {
   title: "Login Page",
@@ -9,9 +9,12 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <AuthLayout title="Login">
-      <Form />
-      <Already url="/register" />
-    </AuthLayout>
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <Card className="w-full max-w-md p-6 space-y-4">
+        <h2 className="text-center text-xl font-semibold">Login</h2>
+        <Form />
+        <Already url="/register" />
+      </Card>
+    </div>
   );
 }

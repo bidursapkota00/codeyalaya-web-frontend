@@ -1,7 +1,10 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
-import { FaGithub, FaFacebook } from "react-icons/fa";
+import { FaGithub } from "react-icons/fa";
+import { Button } from "@/components/ui/button";
+import { UseFormSetError } from "react-hook-form";
+
 import {
   signInWithPopup,
   GoogleAuthProvider,
@@ -10,75 +13,55 @@ import {
 import { auth } from "@/firebase";
 
 type SocialProps = {
-  setError: React.Dispatch<React.SetStateAction<string>>;
-  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  setError: UseFormSetError<any>;
 };
 
-export default function Social({ setError, setLoading }: SocialProps) {
+export default function Social({ setError }: SocialProps) {
   const router = useRouter();
 
-  const handleLogin = async (
+  const handleSocialLogin = async (
     provider: GoogleAuthProvider | GithubAuthProvider
   ) => {
-    setError("");
-    setLoading(true);
+    setError("root", { message: "" });
     try {
       const result = await signInWithPopup(auth, provider);
-      const idToken = await result.user.getIdToken(); // Get Firebase ID Token
-      console.log(idToken);
-
+      const idToken = await result.user.getIdToken();
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/social-login`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${idToken}`, // Send token to backend
+            Authorization: `Bearer ${idToken}`,
           },
         }
       );
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.detail || "Login failed");
-
-      console.log("User authenticated:", data);
-      // localStorage.setItem("token", idToken);
+      if (!response.ok)
+        throw new Error((await response.json()).detail || "Login failed");
       router.push("/");
     } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message);
-        console.log(error.message);
-      } else {
-        setError("An unknown error occurred");
-        console.log("Unknown error: ", error);
-      }
-    } finally {
-      setLoading(false);
+      setError("root", {
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
     }
   };
+
   return (
-    <>
-      <div className="flex items-center my-6">
-        <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
-        <div className="px-4 text-gray-600 dark:text-gray-300">
-          or continue with
-        </div>
-        <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
-      </div>
-      <div className="flex justify-center gap-4 mt-4">
-        <button
-          onClick={() => handleLogin(new GoogleAuthProvider())}
-          className="p-2 bg-white dark:bg-gray-700 shadow-md rounded-full"
-        >
-          <FcGoogle size={24} />
-        </button>
-        <button
-          onClick={() => handleLogin(new GithubAuthProvider())}
-          className="p-2 bg-gray-900 text-white dark:bg-gray-600 shadow-md rounded-full"
-        >
-          <FaGithub size={24} />
-        </button>
-      </div>
-    </>
+    <div className="flex justify-center gap-4">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => handleSocialLogin(new GoogleAuthProvider())}
+      >
+        <FcGoogle size={24} className="mr-2" /> Google
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => handleSocialLogin(new GithubAuthProvider())}
+      >
+        <FaGithub size={24} className="mr-2" /> GitHub
+      </Button>
+    </div>
   );
 }

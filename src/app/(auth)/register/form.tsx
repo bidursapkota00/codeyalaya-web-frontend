@@ -1,54 +1,50 @@
 "use client";
 
-import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Alert } from "@/components/ui/alert";
 import Social from "@/app/(auth)/social";
-import Input from "@/app/(auth)/input";
-import Button from "@/app/(auth)/button";
-import CustomError from "@/app/(auth)/error";
+import { Separator } from "@/components/ui/separator";
+
+const schema = z
+  .object({
+    fullName: z.string().min(1, "Full name is required"),
+    email: z.string().email("Valid email is required"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters long")
+      .regex(
+        /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
+        "Password must include an uppercase letter, a lowercase letter, a number, and a symbol"
+      ),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+type FormData = z.infer<typeof schema>;
 
 export default function RegisterPage() {
-  const [email, setEmail] = useState<string>("");
-  const [fullName, setFullName] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const [error, setError] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<FormData>({ resolver: zodResolver(schema) });
 
-  const validateEmail = (email: string): boolean => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
-
-  const validatePassword = (password: string): boolean => {
-    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
-      password
-    );
-  };
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!fullName) {
-      setError("Full name is required");
-      return;
-    }
-    if (!email || !validateEmail(email)) {
-      setError("Valid email is required");
-      return;
-    }
-    if (!password || !validatePassword(password)) {
-      setError(
-        "Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a symbol"
-      );
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-    setError("");
-    setLoading(true);
+  const onSubmit: SubmitHandler<FormData> = async ({
+    fullName,
+    email,
+    password,
+  }) => {
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register`,
@@ -62,47 +58,58 @@ export default function RegisterPage() {
           }),
         }
       );
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.detail || "Registration failed");
-
+      if (!response.ok)
+        throw new Error(
+          (await response.json()).detail || "Registration failed"
+        );
       router.push("/login");
     } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message);
-        console.log(error.message);
-      } else {
-        setError("An unknown error occurred");
-        console.log("Unknown error: ", error);
-      }
-    } finally {
-      setLoading(false);
+      setError("root", {
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
     }
   };
 
   return (
-    <>
-      <form onSubmit={handleSubmit} className="mt-2">
-        <Input type="text" value={fullName} setValue={setFullName}>
-          Full Name
-        </Input>
-        <Input type="email" value={email} setValue={setEmail}>
-          Email
-        </Input>
-        <Input type="password" value={password} setValue={setPassword}>
-          Password
-        </Input>
-        <Input
-          type="password"
-          value={confirmPassword}
-          setValue={setConfirmPassword}
-        >
-          Confirm Password
-        </Input>
-        <CustomError error={error} />
-        <Button loading={loading} text="Register" loadingText="Registering" />
-      </form>
-      <Social setError={setError} setLoading={setLoading} />
-    </>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <Input type="text" placeholder="Full Name" {...register("fullName")} />
+      {errors.fullName?.message && (
+        <Alert variant="destructive">{errors.fullName.message}</Alert>
+      )}
+
+      <Input type="email" placeholder="Email" {...register("email")} />
+      {errors.email?.message && (
+        <Alert variant="destructive">{errors.email.message}</Alert>
+      )}
+
+      <Input type="password" placeholder="Password" {...register("password")} />
+      {errors.password?.message && (
+        <Alert variant="destructive">{errors.password.message}</Alert>
+      )}
+
+      <Input
+        type="password"
+        placeholder="Confirm Password"
+        {...register("confirmPassword")}
+      />
+      {errors.confirmPassword?.message && (
+        <Alert variant="destructive">{errors.confirmPassword.message}</Alert>
+      )}
+
+      {errors.root?.message && (
+        <Alert variant="destructive">{errors.root.message}</Alert>
+      )}
+
+      <Button type="submit" disabled={isSubmitting}>
+        {isSubmitting ? (
+          <AiOutlineLoading3Quarters className="animate-spin" size={20} />
+        ) : null}
+        {isSubmitting ? "Registering..." : "Register"}
+      </Button>
+
+      <Separator />
+
+      <Social setError={setError} />
+    </form>
   );
 }
