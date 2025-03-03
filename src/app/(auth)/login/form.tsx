@@ -7,6 +7,14 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { z } from "zod";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import { auth } from "@/firebase";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
@@ -20,14 +28,18 @@ const schema = z.object({
 
 type FormData = z.infer<typeof schema>;
 
-export default function Form() {
+export default function LoginForm() {
   const router = useRouter();
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: { email: "", password: "" },
+  });
   const {
-    register,
+    control,
     handleSubmit,
     setError,
-    formState: { errors, isSubmitting },
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
+    formState: { isSubmitting, errors },
+  } = form;
 
   const onSubmit: SubmitHandler<FormData> = async ({ email, password }) => {
     try {
@@ -54,31 +66,71 @@ export default function Form() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <Input type="email" placeholder="Email" {...register("email")} />
-      {errors.email?.message && (
-        <Alert variant="destructive">{errors.email.message}</Alert>
-      )}
+    <Form {...form}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  {...field}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                />
+              </FormControl>
+              <FormMessage>{errors.email?.message}</FormMessage>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input
+                  type="password"
+                  placeholder="Enter your password"
+                  {...field}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                />
+              </FormControl>
+              <FormMessage>{errors.email?.message}</FormMessage>
+            </FormItem>
+          )}
+        />
 
-      <Input type="password" placeholder="Password" {...register("password")} />
-      {errors.password?.message && (
-        <Alert variant="destructive">{errors.password.message}</Alert>
-      )}
+        {errors.root?.message && (
+          <Alert variant="destructive">{errors.root.message}</Alert>
+        )}
 
-      {errors.root?.message && (
-        <Alert variant="destructive">{errors.root.message}</Alert>
-      )}
+        <div className="flex justify-between">
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <AiOutlineLoading3Quarters className="animate-spin" size={20} />
+            ) : null}
+            {isSubmitting ? "Logging in..." : "Login"}
+          </Button>
 
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? (
-          <AiOutlineLoading3Quarters className="animate-spin" size={20} />
-        ) : null}
-        {isSubmitting ? "Logging in..." : "Login"}
-      </Button>
+          <Button
+            variant="link"
+            type="button"
+            onClick={() => router.push("/forget-password")}
+          >
+            Forgot Password?
+          </Button>
+        </div>
+        <Separator />
 
-      <Separator />
-
-      <Social setError={setError} />
-    </form>
+        <Social setError={setError} />
+      </form>
+    </Form>
   );
 }

@@ -5,6 +5,14 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
@@ -22,7 +30,7 @@ const schema = z
         /(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
         "Password must include an uppercase letter, a lowercase letter, a number, and a symbol"
       ),
-    confirmPassword: z.string(),
+    confirmPassword: z.string().min(1, "Confirm Password is required"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
@@ -33,12 +41,21 @@ type FormData = z.infer<typeof schema>;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
   const {
-    register,
+    control,
     handleSubmit,
     setError,
-    formState: { errors, isSubmitting },
-  } = useForm<FormData>({ resolver: zodResolver(schema) });
+    formState: { isSubmitting, errors },
+  } = form;
 
   const onSubmit: SubmitHandler<FormData> = async ({
     fullName,
@@ -71,45 +88,102 @@ export default function RegisterPage() {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <Input type="text" placeholder="Full Name" {...register("fullName")} />
-      {errors.fullName?.message && (
-        <Alert variant="destructive">{errors.fullName.message}</Alert>
-      )}
+    <Form {...form}>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={control}
+          name="fullName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Full Name</FormLabel>
+              <FormControl>
+                <Input
+                  type="text"
+                  placeholder="Full Name"
+                  {...field}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                />
+              </FormControl>
+              <FormMessage>{errors.fullName?.message}</FormMessage>
+            </FormItem>
+          )}
+        />
 
-      <Input type="email" placeholder="Email" {...register("email")} />
-      {errors.email?.message && (
-        <Alert variant="destructive">{errors.email.message}</Alert>
-      )}
+        <FormField
+          control={control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  {...field}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                />
+              </FormControl>
+              <FormMessage>{errors.email?.message}</FormMessage>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Password</FormLabel>
+              <FormControl>
+                <Input
+                  type="password"
+                  placeholder="Enter your password"
+                  {...field}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                />
+              </FormControl>
+              <FormMessage>{errors.password?.message}</FormMessage>
+            </FormItem>
+          )}
+        />
 
-      <Input type="password" placeholder="Password" {...register("password")} />
-      {errors.password?.message && (
-        <Alert variant="destructive">{errors.password.message}</Alert>
-      )}
+        <FormField
+          control={control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Confirm Password</FormLabel>
+              <FormControl>
+                <Input
+                  type="password"
+                  placeholder="Confirm password"
+                  {...field}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                />
+              </FormControl>
+              <FormMessage>{errors.confirmPassword?.message}</FormMessage>
+            </FormItem>
+          )}
+        />
 
-      <Input
-        type="password"
-        placeholder="Confirm Password"
-        {...register("confirmPassword")}
-      />
-      {errors.confirmPassword?.message && (
-        <Alert variant="destructive">{errors.confirmPassword.message}</Alert>
-      )}
+        {errors.root?.message && (
+          <Alert variant="destructive">{errors.root.message}</Alert>
+        )}
 
-      {errors.root?.message && (
-        <Alert variant="destructive">{errors.root.message}</Alert>
-      )}
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? (
+            <AiOutlineLoading3Quarters className="animate-spin" size={20} />
+          ) : null}
+          {isSubmitting ? "Registering..." : "Register"}
+        </Button>
 
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? (
-          <AiOutlineLoading3Quarters className="animate-spin" size={20} />
-        ) : null}
-        {isSubmitting ? "Registering..." : "Register"}
-      </Button>
+        <Separator />
 
-      <Separator />
-
-      <Social setError={setError} />
-    </form>
+        <Social setError={setError} />
+      </form>
+    </Form>
   );
 }
