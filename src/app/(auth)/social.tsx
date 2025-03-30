@@ -36,8 +36,13 @@ export default function Social({ setError }: SocialProps) {
           },
         }
       );
-      if (!response.ok)
-        throw new Error((await response.json()).detail || "Login failed");
+      if (!response.ok) {
+        // Logout from Firebase if backend login fails
+        await auth.signOut();
+        throw new Error(
+          (await response.json()).detail || "Login failed on server."
+        );
+      }
       router.push("/");
     } catch (error) {
       setError("root", {

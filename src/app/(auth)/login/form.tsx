@@ -43,8 +43,11 @@ export default function LoginForm() {
 
   const onSubmit: SubmitHandler<FormData> = async ({ email, password }) => {
     try {
+      // Firebase Authentication
       const { user } = await signInWithEmailAndPassword(auth, email, password);
       const idToken = await user.getIdToken();
+
+      // Backend Authentication
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
         {
@@ -55,10 +58,18 @@ export default function LoginForm() {
           },
         }
       );
-      if (!response.ok)
-        throw new Error((await response.json()).detail || "Login failed");
+
+      if (!response.ok) {
+        // Logout from Firebase if backend login fails
+        await auth.signOut();
+        throw new Error(
+          (await response.json()).detail || "Login failed on server."
+        );
+      }
+
       router.push("/");
     } catch (error) {
+      // Handle errors and display messages
       setError("root", {
         message: error instanceof Error ? error.message : "Unknown error",
       });
