@@ -8,7 +8,7 @@ export function Already({ url }: { url: string }) {
         ? "Don't have an account? "
         : "Already have an account? "}
       <Link href={url} passHref>
-        <Button variant="link" className="p-0 text-purple-600">
+        <Button variant="link" className="text-primary">
           {url === "/register" ? "Register here" : "Login here"}
         </Button>
       </Link>
