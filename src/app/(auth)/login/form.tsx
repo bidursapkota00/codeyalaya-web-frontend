@@ -19,7 +19,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import Social from "@/app/(auth)/social";
-import { Separator } from "@/components/ui/separator";
 
 const schema = z.object({
   email: z.string().email("Valid email is required"),
@@ -138,7 +137,6 @@ export default function LoginForm() {
             Forgot Password?
           </Button>
         </div>
-        <Separator />
 
         <Social setError={setError} />
       </form>

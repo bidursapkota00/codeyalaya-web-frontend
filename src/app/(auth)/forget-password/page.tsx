@@ -48,6 +48,7 @@ export default function Forget() {
       setIsSent(true);
       setTimer(60);
     } catch (error) {
+      console.log(error);
       setError("email", { message: "Failed to send reset email" });
     }
   };

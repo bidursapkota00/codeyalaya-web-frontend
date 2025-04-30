@@ -1,9 +1,9 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
-import { FaGithub } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { UseFormSetError } from "react-hook-form";
+import { FormData } from "./register/form";
 
 import {
   signInWithPopup,
@@ -11,9 +11,10 @@ import {
   GithubAuthProvider,
 } from "firebase/auth";
 import { auth } from "@/firebase";
+import { Separator } from "@/components/ui/separator";
 
 type SocialProps = {
-  setError: UseFormSetError<any>;
+  setError: UseFormSetError<FormData>;
 };
 
 export default function Social({ setError }: SocialProps) {
@@ -52,21 +53,22 @@ export default function Social({ setError }: SocialProps) {
   };
 
   return (
-    <div className="flex justify-center gap-4">
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => handleSocialLogin(new GoogleAuthProvider())}
-      >
-        <FcGoogle size={24} className="mr-2" /> Google
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => handleSocialLogin(new GithubAuthProvider())}
-      >
-        <FaGithub size={24} className="mr-2" /> GitHub
-      </Button>
-    </div>
+    <>
+      <div className="flex items-center gap-2">
+        <Separator className="shrink " />
+        <p>OR</p>
+        <Separator className="shrink " />
+      </div>
+      <div className="flex justify-center">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => handleSocialLogin(new GoogleAuthProvider())}
+        >
+          <FcGoogle size={24} className="mr-2" />
+          Continue with Google
+        </Button>
+      </div>
+    </>
   );
 }

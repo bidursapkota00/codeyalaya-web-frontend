@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Alert } from "@/components/ui/alert";
 import Social from "@/app/(auth)/social";
-import { Separator } from "@/components/ui/separator";
 
 const schema = z
   .object({
@@ -37,7 +36,7 @@ const schema = z
     path: ["confirmPassword"],
   });
 
-type FormData = z.infer<typeof schema>;
+export type FormData = z.infer<typeof schema>;
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -179,8 +178,6 @@ export default function RegisterPage() {
           ) : null}
           {isSubmitting ? "Registering..." : "Register"}
         </Button>
-
-        <Separator />
 
         <Social setError={setError} />
       </form>
