@@ -4,7 +4,7 @@ import React from "react";
 import { FcGoogle } from "react-icons/fc";
 import { Button } from "@/components/ui/button";
 import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
-import { auth } from "@/firebase";
+import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "../context/auth";
 

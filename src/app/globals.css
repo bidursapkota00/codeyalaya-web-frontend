@@ -22,6 +22,8 @@
   --destructive-foreground: 0 0% 100%;
   --success: 142 71% 45%;
   --success-foreground: 0 0% 100%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 98%;
   --border: 267 4% 47%;
   --input: 280 11% 79%;
   --ring: 266 35% 48%;
@@ -60,6 +62,8 @@
   --destructive-foreground: 3 71% 22%;
   --success: 142 70% 70%;
   --success-foreground: 142 28% 22%;
+  --warning: 48 96% 53%;
+  --warning-foreground: 0 0% 98%;
   --border: 270 4% 58%;
   --input: 267 7% 29%;
   --ring: 266 100% 87%;

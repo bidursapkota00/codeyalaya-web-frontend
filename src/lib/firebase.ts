@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getFunctions, httpsCallable } from "firebase/functions";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -13,5 +14,25 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+export const functions = getFunctions();
+
+type IsOwnerRequest = Record<string, never>;
+type IsOwnerResponse = { uid: string; success: boolean };
+export async function checkIsOwner(): Promise<boolean> {
+  try {
+    const user = auth.currentUser;
+    if (!user) return false;
+    const isOwnerFunc = httpsCallable<IsOwnerRequest, IsOwnerResponse>(
+      functions,
+      "isOwner"
+    );
+    const result = await isOwnerFunc();
+
+    return result.data.success === true;
+  } catch (error) {
+    console.error("Error checking owner status:", error);
+    return false;
+  }
+}
 
 export default app;
