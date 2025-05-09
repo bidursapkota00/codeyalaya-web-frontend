@@ -14,3 +14,9 @@ const generateThumbnailUploadUrlResponseSchema = z.object({
 export type generateThumbnailUploadUrlResponse = z.infer<
   typeof generateThumbnailUploadUrlResponseSchema
 >;
+
+export type generateCodeFileUploadUrlRequest =
+  generateThumbnailUploadUrlRequest;
+
+export type generateCodeFileUploadUrlResponse =
+  generateThumbnailUploadUrlResponse;
