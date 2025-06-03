@@ -57,7 +57,7 @@ export function OwnerGuard({ children }: { children: React.ReactNode }) {
         <ShieldX className="h-16 w-16 text-destructive mb-4" />
         <h1 className="text-3xl font-bold text-destructive">403 Forbidden</h1>
         <p className="text-xl mt-2 text-foreground">
-          You don't have permission to access this page
+          You don&apos;t have permission to access this page
         </p>
         <p className="mt-4 text-muted-foreground">
           This area is restricted to owners only

@@ -20,7 +20,7 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
+  // CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -36,7 +36,7 @@ import { Loader2 } from "lucide-react";
 import { CourseFormValues, courseSchema } from "@/lib/schemas";
 import { httpsCallable } from "firebase/functions";
 import { functions } from "@/lib/firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+// import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import {
   generateThumbnailUploadUrlRequest,
   generateThumbnailUploadUrlResponse,
@@ -97,7 +97,7 @@ export default function CreateCourse() {
       }
 
       const createCourse = httpsCallable(functions, "createCourse");
-      const result = await createCourse({
+      await createCourse({
         ...values,
         thumbnailUrl,
       });

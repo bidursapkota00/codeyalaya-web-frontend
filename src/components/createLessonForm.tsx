@@ -86,7 +86,7 @@ export default function CreateLessonForm({
         router.push(`/courses/${courseId}/chapters/${chapterId}`);
         router.refresh();
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error creating lesson:", error);
       //   toast.error(error.message || "Failed to create lesson");
     } finally {

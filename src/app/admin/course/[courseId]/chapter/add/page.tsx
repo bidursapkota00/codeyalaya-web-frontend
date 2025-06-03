@@ -34,9 +34,9 @@ import {
   generateCodeFileUploadUrlResponse,
 } from "@/lib/functions-schemas";
 
-interface ChapterFormProps {
-  courseId: string;
-}
+// interface ChapterFormProps {
+//   courseId: string;
+// }
 
 export default function ChapterForm() {
   const params = useParams();

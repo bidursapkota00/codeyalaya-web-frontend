@@ -3,14 +3,15 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { httpsCallable } from "firebase/functions";
+import { Timestamp } from "firebase/firestore";
 import { functions } from "@/lib/firebase";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
+  // CardHeader,
+  // CardTitle,
+  // CardDescription,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -20,7 +21,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Clock, Play, BookOpen, Calendar, Users } from "lucide-react";
+import { Clock, Play, BookOpen, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
@@ -56,8 +57,8 @@ interface Course {
   discountPrice?: number;
   totalDuration: number;
   totalVideos: number;
-  createdAt: any;
-  updatedAt: any;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
   chapters: Chapter[];
 }
 
@@ -291,7 +292,9 @@ export default function CourseDetailPage() {
                   </h3>
                   <p className="text-muted-foreground">{course.description}</p>
 
-                  <h4 className="font-medium mt-6 mb-2">What you'll learn</h4>
+                  <h4 className="font-medium mt-6 mb-2">
+                    What you&apos;ll learn
+                  </h4>
                   <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
                     {course.chapters.map((chapter) => (
                       <li key={chapter.id}>{chapter.title}</li>
