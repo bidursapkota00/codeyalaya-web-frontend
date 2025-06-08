@@ -20,8 +20,16 @@ import {
   ChevronDown,
   BookOpen,
   Video,
+  ExternalLink,
 } from "lucide-react";
-import { Lesson, mockChapters, mockCourse, mockLessons } from "@/lib/data";
+import {
+  getCourseBySlug,
+  getProcessedLessonsCount,
+  getTotalLessonsCount,
+  Lesson,
+} from "@/lib/data";
+import { useParams } from "next/navigation";
+import Link from "next/link";
 
 const getLevelColor = (level: string) => {
   switch (level) {
@@ -78,19 +86,9 @@ export default function CourseDetailsPage() {
     }
   };
 
-  const getChapterLessons = (chapterId: string) => {
-    return mockLessons
-      .filter((lesson) => lesson.chapterId === chapterId)
-      .sort((a, b) => a.order - b.order);
-  };
+  const { courseSlug } = useParams();
 
-  const getTotalLessons = () => {
-    return mockLessons.length;
-  };
-
-  const getProcessedLessons = () => {
-    return mockLessons.filter((lesson) => lesson.status === "processed").length;
-  };
+  const mockCourse = getCourseBySlug(courseSlug as string);
 
   if (currentLesson) {
     return (
@@ -155,8 +153,8 @@ export default function CourseDetailsPage() {
                 </CardHeader>
                 <CardContent className="p-0">
                   <div className="max-h-96 overflow-y-auto">
-                    {mockChapters.map((chapter) => {
-                      const chapterLessons = getChapterLessons(chapter.id!);
+                    {mockCourse?.chapters.map((chapter) => {
+                      const chapterLessons = chapter.lessons;
                       const isExpanded = expandedChapters.has(chapter.id!);
 
                       return (
@@ -234,47 +232,47 @@ export default function CourseDetailsPage() {
             <div className="flex items-center gap-4 mb-6">
               <Badge
                 variant="secondary"
-                className={getLevelColor(mockCourse.level)}
+                className={getLevelColor(mockCourse?.level || "easy")}
               >
-                {mockCourse.level.toUpperCase()}
+                {mockCourse?.level.toUpperCase()}
               </Badge>
               <div className="flex items-center text-muted-foreground">
                 <Clock className="w-4 h-4 mr-2" />
-                <span>{mockCourse.hours} hours</span>
+                <span>{mockCourse?.hours} hours</span>
               </div>
               <div className="flex items-center text-muted-foreground">
                 <BookOpen className="w-4 h-4 mr-2" />
-                <span>{mockChapters.length} chapters</span>
+                <span>{mockCourse?.chapters.length} chapters</span>
               </div>
               <div className="flex items-center text-muted-foreground">
                 <Video className="w-4 h-4 mr-2" />
-                <span>{getTotalLessons()} lessons</span>
+                <span>{getTotalLessonsCount(mockCourse!)} lessons</span>
               </div>
             </div>
 
-            <h1 className="text-4xl font-bold mb-4">{mockCourse.title}</h1>
+            <h1 className="text-4xl font-bold mb-4">{mockCourse?.title}</h1>
             <p className="text-xl text-muted-foreground mb-6">
-              {mockCourse.description}
+              {mockCourse?.description}
             </p>
 
             <div className="flex items-center space-x-6 text-muted-foreground">
               <div className="flex items-center">
                 <User className="w-4 h-4 mr-2" />
-                <span>Created by {mockCourse.createdBy}</span>
+                <span>Created by {mockCourse?.createdBy}</span>
               </div>
               <div>
-                <span>Updated {formatDate(mockCourse.updatedAt)}</span>
+                <span>Updated {formatDate(mockCourse?.updatedAt || "")}</span>
               </div>
             </div>
           </div>
 
           {/* Course Thumbnail */}
           <div className="lg:col-span-1">
-            {mockCourse.thumbnailUrl && (
+            {mockCourse?.thumbnailUrl && (
               <div className="aspect-video rounded-lg overflow-hidden bg-muted">
                 <img
-                  src={mockCourse.thumbnailUrl}
-                  alt={mockCourse.title}
+                  src={mockCourse?.thumbnailUrl}
+                  alt={mockCourse?.title}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -295,12 +293,14 @@ export default function CourseDetailsPage() {
               <CardContent>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-muted-foreground">
-                    {getProcessedLessons()} of {getTotalLessons()} lessons
-                    completed
+                    {getProcessedLessonsCount(mockCourse!)} of{" "}
+                    {getTotalLessonsCount(mockCourse!)} lessons completed
                   </span>
                   <span className="text-sm font-medium">
                     {Math.round(
-                      (getProcessedLessons() / getTotalLessons()) * 100
+                      (getProcessedLessonsCount(mockCourse!) /
+                        getTotalLessonsCount(mockCourse!)) *
+                        100
                     )}
                     %
                   </span>
@@ -310,7 +310,9 @@ export default function CourseDetailsPage() {
                     className="bg-primary h-2 rounded-full transition-all duration-300"
                     style={{
                       width: `${
-                        (getProcessedLessons() / getTotalLessons()) * 100
+                        (getProcessedLessonsCount(mockCourse!) /
+                          getTotalLessonsCount(mockCourse!)) *
+                        100
                       }%`,
                     }}
                   ></div>
@@ -321,8 +323,8 @@ export default function CourseDetailsPage() {
             {/* Chapters */}
             <div className="space-y-4">
               <h2 className="text-2xl font-bold">Course Content</h2>
-              {mockChapters.map((chapter) => {
-                const chapterLessons = getChapterLessons(chapter.id!);
+              {mockCourse?.chapters.map((chapter) => {
+                const chapterLessons = chapter.lessons;
                 const isExpanded = expandedChapters.has(chapter.id!);
 
                 return (
@@ -443,6 +445,13 @@ export default function CourseDetailsPage() {
                   Start Learning
                 </Button>
 
+                <Link href={`/courses/${courseSlug}/manual`} className="block">
+                  <Button className="w-full" size="lg">
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Manual
+                  </Button>
+                </Link>
+
                 <Button variant="outline" className="w-full">
                   <Download className="w-4 h-4 mr-2" />
                   Download Resources
@@ -455,23 +464,23 @@ export default function CourseDetailsPage() {
                       <span className="text-muted-foreground">
                         Total Duration:
                       </span>
-                      <span>{mockCourse.hours} hours</span>
+                      <span>{mockCourse?.hours} hours</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Chapters:</span>
-                      <span>{mockChapters.length}</span>
+                      <span>{mockCourse?.chapters.length}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Lessons:</span>
-                      <span>{getTotalLessons()}</span>
+                      <span>{getTotalLessonsCount(mockCourse!)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Level:</span>
                       <Badge
                         variant="secondary"
-                        className={getLevelColor(mockCourse.level)}
+                        className={getLevelColor(mockCourse?.level || "easy")}
                       >
-                        {mockCourse.level}
+                        {mockCourse?.level}
                       </Badge>
                     </div>
                   </div>
